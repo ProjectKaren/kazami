@@ -122,13 +122,16 @@
     (make-array `(,(length patterns) 2)
       :initial-contents patterns)))
 
+(defparameter +token-pattern-length+
+  (array-dimension +all-token-pattern+ 0))
+
 (defstruct token
   (id :any :type keyword)
   (string "" :type string))
 
 (defmacro match-length (start end)
   `(if (or (null ,start) (> ,start 0))
-     nil
+     -1
      ,end))
 
 
@@ -145,19 +148,19 @@ div, section  {
   (let ((max-position nil))
     (loop for i from 0 below (length vector)
           for current = (aref vector 0) then (aref vector i)
-          with max = nil
-          do (when (integerp current)
-               (if (null max)
-                 (setf max-position i
-                       max current)
-                 (when (< max current)
-                   (setf max-position i
-                         max current)))))
+          with max = -1
+          do (when (< max current)
+               (setf max-position i
+                     max current)))
     max-position))
 
 (defun tokenize (str)
-  (let ((marr (make-array (array-dimension +all-token-pattern+ 0)
-                          :initial-element nil)))
+  @type string str
+  @optimize (speed 3)
+  @optimize (safety 0)
+  (let ((marr (make-array +token-pattern-length+
+                          :element-type 'fixnum
+                          :initial-element -1)))
     (loop for i from 0 below (length marr)
           ;do (print (aref +all-token-pattern+ i 1))
           do (multiple-value-bind (start end)
@@ -173,13 +176,14 @@ div, section  {
                 (subseq str (aref marr max)))))))
 
 (defun tokenize-all (str)
-(let ((tokens (make-array 128 :initial-element nil
+(let ((tokens (make-array 4096 :initial-element nil
                               :fill-pointer 0
                               :adjustable t)))
   (loop with source = str
         until (string= source "")
         do (multiple-value-bind (token rest-source)
              (tokenize source)
+             (print token)
              (vector-push-extend token tokens)
              (setf source rest-source)))
   (print tokens)))
