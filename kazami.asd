@@ -16,7 +16,7 @@
   :version "0.1"
   :author "Tamamu"
   :license "LLGPL"
-  :depends-on (:cl-annot)
+  :depends-on (:cl-annot :cl-ppcre)
   :components ((:module "src"
                 :components
                 ((:file "kazami"))))
