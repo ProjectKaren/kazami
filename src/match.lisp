@@ -20,7 +20,7 @@
   `(defparameter ,key ,rule))
 
 (defun |nonascii| (c)
-  (<= 0 (char-code c) 177)) 
+  (<= 1113974 (char-code c) 1114111)) 
 
 (defun |unicode| (c)
   (not (typep c 'standard-char))) 
@@ -131,13 +131,13 @@
          (last-pos start))
       ((null patterns) (make-token :key last-matched
                                    :value (subseq src start last-pos)))
-      (format t "~A:~A ~A~%" pos (char src pos) patterns)
-      (when (>= pos (1- src-length))
+      ;(format t "~A ~A~%" pos patterns)
+      (when (>= pos src-length)
         (dolist (p patterns)
           (let ((k (check-satisfied p)))
             (unless (null k)
               (setf last-matched k
-                    last-pos pos))))
+                    last-pos (1- pos)))))
         (return (make-token :key last-matched
                             :value (subseq src start (1+ last-pos)))))
       (multiple-value-bind (rest-pattern matched)
