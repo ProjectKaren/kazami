@@ -129,8 +129,10 @@
     (do ((pos start (1+ pos))
          (last-matched :any)
          (last-pos start))
-      ((null patterns) (make-token :key last-matched
-                                   :value (subseq src start last-pos)))
+      ((null patterns)
+       (values last-pos
+         (make-token :key last-matched
+                     :value (subseq src start last-pos))))
       ;(format t "~A ~A~%" pos patterns)
       (when (>= pos src-length)
         (dolist (p patterns)
@@ -138,8 +140,9 @@
             (unless (null k)
               (setf last-matched k
                     last-pos (1- pos)))))
-        (return (make-token :key last-matched
-                            :value (subseq src start (1+ last-pos)))))
+        (return (values (1+ last-pos)
+                        (make-token :key last-matched
+                                    :value (subseq src start (1+ last-pos))))))
       (multiple-value-bind (rest-pattern matched)
         (validate patterns (char src pos))
         (unless (null matched)
@@ -147,3 +150,16 @@
                 last-pos pos)
                 )
         (setf patterns rest-pattern)))))
+
+(defun scan-all (src patterns)
+  (let ((start 0)
+        (src-length (length src)))
+    (loop while (< start src-length)
+          do
+      (multiple-value-bind (pos token)
+        (scan src patterns start)
+        (if (eq (token-key token) :any)
+          (incf start)
+          (progn
+            (format t "~A~%" token)
+            (setf start pos)))))))
